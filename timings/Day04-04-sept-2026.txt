@@ -1,0 +1,6 @@
+4.5 hrs - Morning class
+3 hrs   - previous class + revision
+1 hr    - learning to connect ec2 using ssh and terraform
+1 hr    - code
+0.5 hr  - revision for evening class
+1.5 hr  - eveening class
