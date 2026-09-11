@@ -1,0 +1,92 @@
+#####Hands_On_l1####
+ 
+ * Ansible - Create user
+  
+    name: Create Pathnex user hosts: all become: yes
+
+    tasks:
+
+       .name: Create user pathnex-admin user: name: pathnex-admin shell: /bin/bash
+
+ * Terraform - Security Group 
+  
+   provider "aws" { region = "us-east-1" }
+
+   resource "aws_security_group" "PathnexSG" { name = "PathnexSG" description = "Pathnex SG for SSH"
+
+   ingress { from_port = 22 to_port = 22 protocol = "tcp" cidr_blocks = ["0.0.0.0/0"] } }
+
+   resource "aws_instance" "PathnexEC2" { ami = "ami-0abcd1234abcd1234" instance_type = "r6i.4xlarge" vpc_security_group_ids = [aws_security_group.PathnexSG.id]
+
+   tags = { Name = "Pathnex-EC2" } }
+ 
+ * Shell Scripts - check file exists
+
+   #!/bin/bash FILE="/tmp/pathnex.txt"
+
+   if [ -f "$FILE" ]; then echo "File exists" else echo "File does not exist" fi
+
+ * Kubernetes - Add environments variables 
+
+    apiVersion: v1 kind: Pod metadata: name: pathnex-env-pod spec: containers: - name: app image: nginx env: - name: APP_ENV value: "production"
+
+ NODEJS BUILD
+
+ * Jenkins Pipeline - NodeJS Build 
+   
+    You will learn how to install dependencies, run tests, and build a NodeJS project. 
+
+    pipeline { agent any tools { nodejs 'NodeJS-16' } stages { stage('Checkout') { steps { git url: 'https://github.com/Pathnex/sample-node-app.git' } } stage('Install Dependencies') { steps { sh 'npm install' } } stage('Run Tests') { steps { sh 'npm test' } } stage('Build') { steps { sh 'npm run build' } } } } 
+
+ * Gitlab CI - Nodejs build 
+ 
+    stages:
+      .install
+      .test
+      .build
+    node-install: stage: install image: node:16 script: - git clone https://github.com/Pathnex/sample-node-app.git - cd sample-node-app - npm install
+
+    node-test: stage: test image: node:16 script: - cd sample-node-app - npm test
+
+    node-build: stage: build image: node:16 script: - cd sample-node-app - npm run build
+
+
+#####Hands_On_l2####
+
+ Day 04 — Basic CI/CD Concepts with Jenkins & GitLab
+
+ * Jenkinsfile — Basic CI Pipeline pipeline { agent any stages { stage('Build') { steps { echo 'Building project' } } stage('Test') { steps { echo 'Running tests' } } stage('Deploy') { steps { echo 'Deploying application' } } } }
+
+ * GitLab CI/CD — Basic Pipeline stages:
+
+   .build
+   .test
+   .deploy
+  build: stage: build script: - echo "Building project"
+
+  test: stage: test script: - echo "Running tests"
+
+  deploy: stage: deploy script: - echo "Deploying application"
+
+ * Ansible — Install and Configure Nginx
+
+   .name: Install and configure Nginx hosts: all become: yes tasks:
+      .name: Install nginx yum: name: nginx state: present
+      .name: Configure nginx template: src: nginx.conf.j2 dest: /etc/nginx/nginx.conf
+      .name: Start nginx service service: name: nginx state: started enabled: yes
+
+ * Terraform — EC2 with Security Group resource "aws_security_group" "example" { name = "example_security_group" description = "Allow SSH and HTTP" ingress { from_port = 22 to_port = 22 protocol = "tcp" cidr_blocks = ["0.0.0.0/0"] }
+
+  ingress { from_port = 80 to_port = 80 protocol = "tcp" cidr_blocks = ["0.0.0.0/0"] }
+
+  egress { from_port = 0 to_port = 0 protocol = "-1" cidr_blocks = ["0.0.0.0/0"] } }
+
+ * Docker
+ 
+ APACHE CONTAINER 
+
+  FROM ubuntu:22.04 RUN apt update && apt install apache2 -y RUN echo "Hello Pathnex" > /var/www/html/index.html CMD ["apachectl", "-D", "FOREGROUND"]
+
+ BASH REAL PATH
+ 
+  /var/www/html

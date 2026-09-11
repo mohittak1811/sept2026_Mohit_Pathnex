@@ -1,0 +1,88 @@
+#####Hands_On_l1####
+
+ * Ansible - Create User
+    
+    .name: Create Pathnex user hosts: all become: yes
+     tasks:
+        .name: Create user pathnex-admin user: name: pathnex-admin shell: /bin/bash 
+
+ * Terraform - Security Group
+
+    provider "aws" { region = "us-east-1" }
+
+    resource "aws_security_group" "PathnexSG" { name = "PathnexSG" description = "Pathnex SG for SSH"
+
+    ingress { from_port = 22 to_port = 22 protocol = "tcp" cidr_blocks = ["0.0.0.0/0"] } }
+
+    resource "aws_instance" "PathnexEC2" { ami = "ami-0abcd1234abcd1234" instance_type = "r6i.4xlarge" vpc_security_group_ids = [aws_security_group.PathnexSG.id]
+
+    tags = { Name = "Pathnex-EC2" } }
+ 
+  
+ * Kuberenetes - Add Environments Variables
+
+    apiVersion: v1 kind: Pod metadata: name: pathnex-env-pod spec: containers: - name: app image: nginx env: - name: APP_ENV value: "production"
+
+ * Shell Script - Check file exits
+
+    #!/bin/bash FILE="/tmp/pathnex.txt"
+
+if [ -f "$FILE" ]; then echo "File exists" else echo "File does not exist" fi
+
+ NODEJS BUILD 
+  
+ * Jenkins Pipeline - NodeJS Build
+  
+    You will learn how to install dependencies, run tests, and build a NodeJS project. 
+
+    pipeline { agent any tools { nodejs 'NodeJS-16' } stages { stage('Checkout') { steps { git url: 'https://github.com/Pathnex/sample-node-app.git' } } stage('Install Dependencies') { steps { sh 'npm install' } } stage('Run Tests') { steps { sh 'npm test' } } stage('Build') { steps { sh 'npm run build' } } } }
+
+ * Gitlab Ci - NodesJS Build
+  
+    stages:
+      .install
+      .test
+      .build
+    node-install: stage: install image: node:16 script: - git clone https://github.com/Pathnex/sample-node-app.git - cd sample-node-app - npm install
+
+    node-test: stage: test image: node:16 script: - cd sample-node-app - npm test
+
+    node-build: stage: build image: node:16 script: - cd sample-node-app - npm run build
+ 
+  
+
+#####Hands_On_l2####
+  
+ Day 02 — Services & Tags
+
+* Ansible — Install & Enable Nginx
+
+  .name: Install and start Nginx on Pathnex hosts: all become: yes
+
+   tasks:
+
+     .name: Install nginx yum: name: nginx state: present
+
+     .name: Enable nginx service: name: nginx state: started enabled: yes
+
+* Terraform — EC2 with Tags (r5.2xlarge) provider "aws" { region = "us-east-1" }
+
+ resource "aws_instance" "PathnexEC2" { ami = "ami-0abcd1234abcd1234" instance_type = "r5.2xlarge"
+
+ tags = { Name = "Pathnex-Server" Environment = "Training" Owner = "PathnexStudent" } }
+
+ KUBERNETES - Deployment with 2 Replicas
+ 
+ apiVersion: apps/v1 kind: Deployment metadata: name: pathnex-deployment spec: replicas: 2 selector: matchLabels: app: pathnex-app template: metadata: labels: app: pathnex-app spec: containers: - name: app image: nginx ports: - containerPort: 80
+
+* Shell Script — Disk Usage #!/bin/bash df -h
+
+* Docker
+
+ DOCKER IMAGES AND CONTAINERS
+
+ docker pull ubuntu docker images docker ps -a
+
+ DOCKER FILE 
+ 
+ FROM ubuntu:22.04 RUN apt update CMD["echo","Hello Pathnex"]
