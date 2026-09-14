@@ -1,0 +1,87 @@
+#####Hands_On_l1####
+
+Day 10 - Conditions, Route table, Secret, Loops
+
+ * Ansible - When condition🔹 
+
+   .name: Install tool based on OS hosts: all become: yes
+
+    tasks:
+
+       .name: Install htop yum: name: htop state: present when: ansible_facts['os_family'] == "RedHat"
+
+
+ * Terraform — Route Table + Association
+resource "aws_route_table" "PathnexRT" { vpc_id = aws_vpc.PathnexVPC.id
+
+route { cidr_block = "0.0.0.0/0" gateway_id = aws_internet_gateway.PathnexIGW.id }
+
+tags = { Name = "Pathnex-RouteTable" } }
+
+resource "aws_route_table_association" "PathnexRTA" { subnet_id = aws_subnet.PathnexSubnet.id route_table_id = aws_route_table.PathnexRT.id }
+
+  
+ * Kubernetes — Secret
+apiVersion: v1 kind: Secret metadata: name: pathnex-secret type: Opaque data: password: cGF0aG5leDEyMw== # "pathnex123" base64
+
+
+ * Shell Script — For Loop 1–10
+#!/bin/bash
+
+for i in {1..10}; do echo "Number: $i" done
+
+Caching Dependencies
+ 
+ * Jenkins Pipeline — Cache Maven Dependencies
+You will learn how to reuse dependencies to speed up builds.
+
+pipeline { agent any environment { INSTITUTE_NAME = "Pathnex" } stages { stage('Checkout') { steps { git url: 'https://github.com/Pathnex/sample-java-app.git' } } stage('Build') { steps { sh ''' if [ -d ".m2" ]; then echo "Using cached dependencies" else mvn clean compile fi ''' } } } }
+
+ * GitLab CI — Cache Dependencies
+You will learn how to cache dependencies in GitLab CI.
+
+stages:
+   .build  
+
+build: stage: build image: maven:3.8.1-jdk-17 cache: key: maven-cache paths: - .m2/repository script: - git clone https://github.com/Pathnex/sample-java-app.git - cd sample-java-app - mvn clean compile
+
+
+#####Hands_On_l2####
+
+Day 11 — Kubernetes with Helm, Advanced Terraform and GitLab CI/CD
+
+ *  Ansible — Install Helm on Server
+
+       .name: Install Helm hosts: all become: yes tasks:
+name: Download Helm get_url: url: https://get.helm.sh/helm-v3.7.0-linux-amd64.tar.gz dest: /tmp/helm.tar.gz
+
+       .name: Extract Helm unarchive: src: /tmp/helm.tar.gz dest: /usr/local/bin/ remote_src: yes
+
+       .name: Set Helm binary permissions file: path: /usr/local/bin/helm mode: '0755' 
+
+ 
+*  Terraform — Provision EC2 with Elastic IP resource "aws_eip" "pathnex_eip" { instance = aws_instance.pathnex_ec2.id }
+
+resource "aws_instance" "pathnex_ec2" { ami = "ami-0abcd1234abcd1234" instance_type = "t3.medium"
+
+tags = { Name = "Pathnex-EC2" } }
+
+ * Kubernetes — Helm Chart for Nginx helm repo add stable https://charts.helm.sh/stable helm install pathnex-nginx stable/nginx-ingress 
+
+* Jenkinsfile — Multi-Stage Pipeline pipeline { agent any environment { IMAGE_NAME = 'pathnex-web-app' } stages { stage('Checkout') { steps { git 'https://github.com/pathnex/sample-repo.git' } } stage('Build Docker Image') { steps { script { docker.build("${env.IMAGE_NAME}") } } } stage('Push Docker Image') { steps { script { docker.withRegistry('https://docker.io', 'docker-credentials') { docker.image("${env.IMAGE_NAME}").push('latest') } } } } stage('Deploy to Kubernetes') { steps { script { sh 'kubectl apply -f deployment.yaml' } } } } } 
+
+ * GitLab CI/CD — Build, Push, and Deploy with Helm stages:
+
+    .build
+    .push
+    .deploy
+build: stage: build script: - docker build -t pathnex-web-app .
+
+push: stage: push script: - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" - docker push pathnex-web-app
+
+deploy: stage: deploy script: - helm repo add stable https://charts.helm.sh/stable - helm install pathnex-nginx stable/nginx-ingress
+
+ * Docker
+
+EXPOSE & Port Mapping
+FROM nginx EXPOSE 80 docker run -d -p 8080:80 nginx
