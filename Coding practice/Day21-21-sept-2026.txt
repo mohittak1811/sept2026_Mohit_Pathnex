@@ -1,0 +1,256 @@
+#####Hands_On_l1####
+
+#Day 21 - Speed Typing (Took 18 minutes)
+
+## Ansible -
+  
+  -name: Install and enable Nginx service
+   hosts: all
+   become: true 
+   tasks:
+      - name: Install Nginx 
+        ansible.buildin.package:
+          name: ngninx
+          state: present 
+
+      - name: Ensure Nginx is started and enabled
+        ansible.buildin.service:
+          name: nginx
+          state: started 
+          enabled: true
+
+## Terraform 
+
+resource "aws_instance" "pathnex_server"{
+  ani           = "ami-0c55b159cbfafe1f0" 
+  instance_type = "t3.micro"
+
+  tags = { 
+    Owner = "PathnexStudent" 
+    Name  = "Pathnex-EC2"
+   }
+  } 
+
+## Kubernetes 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+   name: pathnex-nginx-deployement
+   labels:
+     app: pathnex-nginx
+  
+  spec:
+   replicas: 3
+   selector:
+     matchlabs:
+        app: pathnex-nginx
+   template:
+     metadata:
+       labels:
+         app: pathnex-nginx
+     spec:
+       container: 
+        - name: nginx
+          image: nginx:latest 
+          ports: 
+            - conatinerPort: 80
+
+## Shell script 
+ 
+#!/usr/bin/env bash 
+
+echo "=== Current Date & Time ==="
+date 
+
+echo -e "\n=== System Update ==="
+uptime 
+
+echo -e "\n=== Disk Usage ==="
+df -h
+
+# Multi-Environment Pipeline
+
+##  Jenkins Pipeline — Deploy to Multiple Environments
+we will learn how to **define multiple environment deployments in one pipeline**.
+
+pipeline {
+    agent any
+    environment {
+        INSTITUTE_NAME = "Pathnex"
+    }
+    stages {
+        stage('Deploy to Dev') {
+            steps {
+                sh 'echo "Deploying $INSTITUTE_NAME to Dev environment"'
+            }
+        }
+        stage('Deploy to Staging') {
+            steps {
+                input message: "Approve Staging Deployment?"
+                sh 'echo "Deploying $INSTITUTE_NAME to Staging environment"'
+            }
+        }
+        stage('Deploy to Prod') {
+            steps {
+                input message: "Approve Prod Deployment?"
+                sh 'echo "Deploying $INSTITUTE_NAME to Prod environment"'
+            }
+        }
+    }
+}
+
+##  GitLab CI — Multi-Environment
+we will learn how to **define multiple environment deployments in GitLab CI**.
+
+stages:
+  - deploy
+
+variables:
+  INSTITUTE_NAME: "Pathnex"
+
+deploy-dev:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "Deploying $INSTITUTE_NAME to Dev environment"
+
+deploy-staging:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "Deploying $INSTITUTE_NAME to Staging environment"
+  when: manual
+
+deploy-prod:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "Deploying $INSTITUTE_NAME to Prod environment"
+  when: manual
+
+
+#####Hands_On_l2####
+
+# Day 21 — Disaster Recovery and Backup Strategies
+
+##  Ansible — Backup and Restore Files
+
+```yaml
+- name: Backup and Restore Files
+  hosts: all
+  become: yes
+  tasks:
+    - name: Create backup of /etc directory
+      command: tar -czvf /tmp/etc-backup.tar.gz /etc
+    - name: Copy backup to remote server
+      copy:
+        src: /tmp/etc-backup.tar.gz
+        dest: /tmp/etc-backup.tar.gz
+    - name: Restore backup from remote server
+      command: tar -xzvf /tmp/etc-backup.tar.gz -C /
+
+
+## Terraform — Create S3 Bucket with Cross-Region Replication
+resource "aws_s3_bucket" "pathnex_bucket" {
+  bucket = "pathnex-backup-bucket"
+  region = "us-east-1"
+
+  versioning {
+    enabled = true
+  }
+}
+
+resource "aws_s3_bucket" "pathnex_backup_bucket_eu" {
+  bucket = "pathnex-backup-bucket-eu"
+  region = "eu-west-1"
+
+  versioning {
+    enabled = true
+  }
+}
+
+resource "aws_s3_bucket_object" "pathnex_backup_file" {
+  bucket = aws_s3_bucket.pathnex_bucket.bucket
+  key    = "backup.tar.gz"
+  source = "pathnex-backup.tar.gz"
+}
+
+
+## Kubernetes — Disaster Recovery with Persistent Volumes
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: pathnex-statefulset
+spec:
+  serviceName: "pathnex"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pathnex
+  template:
+    metadata:
+      labels:
+        app: pathnex
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          volumeMounts:
+            - mountPath: /usr/share/nginx/html
+              name: web-content
+  volumeClaimTemplates:
+  - metadata:
+      name: web-content
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 5Gi
+
+
+## Jenkinsfile — Backup Strategy for Jenkins Workspace
+pipeline {
+    agent any
+    stages {
+        stage('Backup') {
+            steps {
+                echo 'Backing up Jenkins workspace...'
+                sh 'tar -czvf /tmp/jenkins-backup.tar.gz ${WORKSPACE}'
+            }
+        }
+        stage('Restore') {
+            steps {
+                echo 'Restoring Jenkins workspace...'
+                sh 'tar -xzvf /tmp/jenkins-backup.tar.gz -C ${WORKSPACE}'
+            }
+        }
+    }
+}
+
+
+## GitLab CI/CD — Backup and Restore Deployment Files
+stages:
+  - backup
+  - restore
+
+backup:
+  stage: backup
+  script:
+    - tar -czvf /tmp/backup.tar.gz kubernetes/deployment.yaml
+
+restore:
+  stage: restore
+  script:
+    - tar -xzvf /tmp/backup.tar.gz -C kubernetes/
+
+
+## Docker
+# Docker Compose
+version: '3'
+services:
+  web:
+    image: nginx
+    container_name: pathnex-nginx
+    ports:
+      - "80:80"
