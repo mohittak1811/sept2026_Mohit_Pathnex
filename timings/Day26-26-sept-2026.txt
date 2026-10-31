@@ -1,0 +1,4 @@
+4 hr    - Morning class 
+2 hr    - git code 
+2 hr    - evening class 
+2.5 hr  - revision
